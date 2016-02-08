@@ -1,0 +1,2 @@
+# TextRegonizer
+Work In Progress
