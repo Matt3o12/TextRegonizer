@@ -43,28 +43,10 @@ class TimeInput(InputType):
     ]
 
     def is_part_of_input(self, parts):
-        parts = " ".join(parts)
-        # only use time_regexes when finished.
-        if parts in self.fixed_times:
-            return True
-
-        if parts == "at":
-            # Using regex's we can't only parse the first
-            # word without adding yet another regex.
-            # Sicen 'at' is the only possible word, we only
-            # need to check if parts is 'at'.
-            # We don't need to worry about 'tomorrow', etc.
-            # because they're fixed times and already covered.
-            return True
-
-        for test in self.time_regexes:
-            if re.match(test, parts):
-                return True
-
-        return False
+        return (len(parts) == 1 and parts[0] == "at"
+                or self.is_input_completed(parts))
 
     def is_input_completed(self, parts):
-        # TODO: DRY
         parts = " ".join(parts)
         if parts in self.fixed_times:
             return True
