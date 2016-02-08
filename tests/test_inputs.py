@@ -50,9 +50,7 @@ class TestInputTypeMeta(type):
         return type.__new__(mcs, name, bases, namespace, **kwargs)
 
 
-class BaseInputTypeTestCase:
-    __metaclass__ = TestInputTypeMeta
-
+class BaseInputTypeTestCase(metaclass=TestInputTypeMeta):
     def test_completeable(self):
         self.assertEqual(self.completable, self.intype.completable)
 
