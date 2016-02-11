@@ -1,7 +1,9 @@
 import re
 
+
 class InputTypeException(Exception):
     pass
+
 
 class InputType:
     completable = True
@@ -14,6 +16,7 @@ class InputType:
 
 
 class StringInput(InputType):
+
     def __init__(self, expected_parts):
         self.expected_parts = expected_parts
         if isinstance(self.expected_parts, str):
@@ -43,8 +46,8 @@ class TimeInput(InputType):
     ]
 
     def is_part_of_input(self, parts):
-        return (len(parts) == 1 and parts[0] == "at"
-                or self.is_input_completed(parts))
+        return (len(parts) == 1 and parts[0] == "at" or
+                self.is_input_completed(parts))
 
     def is_input_completed(self, parts):
         parts = " ".join(parts)

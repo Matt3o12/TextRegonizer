@@ -51,6 +51,7 @@ class TestInputTypeMeta(type):
 
 
 class BaseInputTypeTestCase(metaclass=TestInputTypeMeta):
+
     def test_completeable(self):
         self.assertEqual(self.completable, self.intype.completable)
 
