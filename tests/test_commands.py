@@ -15,24 +15,39 @@ class TestAnyResult(unittest.TestCase):
     needle = "I'm what ya lookin for"
 
     def test_no_input(self):
-        self.assertFalse(any_result([]))
+        self.assert_no_result([])
 
     def test_falsy_input(self):
-        self.assertFalse(any_result([False]))
-        self.assertFalse(any_result([False, False]))
-        self.assertFalse(any_result([False, None, "", [], {}]))
+        self.assert_no_result([False])
+        self.assert_no_result([False, False])
+        self.assert_no_result([False, None, "", [], {}])
 
-    def assert_needle(self, values):
-        self.assertEqual(self.needle, any_result(values))
+    def assert_needle(self, *values):
+        self.assertEqual(self.needle, any_result(*values))
+
+    def assert_no_result(self, *values):
+        self.assertFalse(any_result(*values))
 
     def test_input(self):
         self.assert_needle([self.needle])
         self.assert_needle([self.needle, False])
         self.assert_needle([False, "", None, self.needle, {}])
 
+    def test_input_with_key(self):
+        self.needle = (False, "hello world")
+        key = lambda x: x[1]
+        self.assert_needle([self.needle], key)
+        self.assert_needle([self.needle, (False, False)], key)
+        self.assert_needle([(True, False), (False, False), self.needle], key)
+
+    def test_input_with_key_invalid(self):
+        key = lambda x: x[0]
+        self.assert_no_result([], key)
+        self.assert_no_result([(False, False)], key)
+        self.assert_no_result([(False, True), (False, False)], key)
+
 
 class TestCommand(unittest.TestCase):
-
     def setUp(self):
         self.command = Command()
         self.move_method = self.command._Command__move_parts_back
@@ -86,19 +101,37 @@ class CommandFunctionalTestsMeta(type):
 
     def __new__(mcs, name, bases, namespace, **kwargs):
 
-        def gen_valid_commands(command):
+        def gen_valid_commands(sentence):
 
             def test_command_valid(self):
-                self.assertTrue(self.command.matches(command))
+                self.assertTrue(self.command.matches(sentence))
 
             return test_command_valid
 
-        def gen_invalid_commands(command):
+        def gen_invalid_commands(sentence):
 
             def test_command_invalid(self):
-                self.assertFalse(self.command.matches(command))
+                self.assertFalse(self.command.matches(sentence))
 
             return test_command_invalid
+
+
+        def gen_is_command(sentence):
+            def test_is_command(self):
+                command, matches = is_command(sentence) or (None, None)
+                # self.assertIsNotNone(command, "No command found")
+                # self.assertIsNotNone(matches, "No command found")
+
+                if matches:
+                    matches_fmt = ("{}: {}".format(*s) for s in matches or [])
+                else:
+                    matches_fmt = ["No matches"]
+
+                msg = "Matches: {}".format(", ".join(matches_fmt))
+                self.assertIsInstance(command, self.command_class, msg)
+                self.assertTrue(matches)
+
+            return test_is_command
 
         name_regex = re.compile(r"[^a-z0-9]")
 
@@ -112,6 +145,7 @@ class CommandFunctionalTestsMeta(type):
 
         adder(gen_valid_commands, valid, "test_valid_command_{}")
         adder(gen_invalid_commands, invalid, "test_invalid_command_{}")
+        adder(gen_is_command, valid, "test_is_command_{}")
 
         return type.__new__(mcs, name, bases, namespace, **kwargs)
 

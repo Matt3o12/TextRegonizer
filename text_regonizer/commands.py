@@ -8,9 +8,12 @@ class HandlerStatus(Enum):
     NOT_FOUND = 3
 
 
-def any_result(iterable):
+def any_result(iterable, key=None):
+    if key is None:
+        key = lambda x: x
+
     for element in iterable:
-        if element:
+        if key(element):
             return element
 
     return False
@@ -130,4 +133,6 @@ class ReminderCommand(Command):
 
 def is_command(sentence):
     commands = [ReminderCommand(), WeatherCommand()]
-    return any_result(c.matches(sentence) for c in commands)
+    foo = ReminderCommand().matches(sentence)
+    key = lambda x: x and x[1]
+    return any_result(((c, c.matches(sentence)) for c in commands), key)
