@@ -101,14 +101,12 @@ class Command:
 
             parts.append(sentence.pop(0))
             status = self.handle_input_type(parts, intype)
-            # print(" Parts: {}; Remaining: {}; intype: {}".format(
-            #     parts, sentence,
-            #     type(intype).__name__ if isinstance(intype, InputType) else intype
-            # ))
             if status == HandlerStatus.DONE:
                 return parts
 
         self.__move_parts_back(parts, sentence)
+        raise RuntimeError("This state should never have been reached. "
+                + "Please create a bug report")
 
     def handle_input_type(self, parts, intype):
         if not intype.is_part_of_input(parts):

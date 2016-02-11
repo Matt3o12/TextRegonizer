@@ -64,10 +64,11 @@ class TestCommand(unittest.TestCase):
 
         self.assertEqual(status, got)
 
-    def prep_intype(self, part_of_input, completed):
+    def prep_intype(self, part_of_input, completed, **attrs):
         intype = mock.Mock(inputs.InputType)
         intype.is_part_of_input.return_value = part_of_input
         intype.is_input_completed.return_value = completed
+        intype.configure_mock(**attrs)
 
         return intype
 
@@ -96,6 +97,61 @@ class TestCommand(unittest.TestCase):
         self.move_method(parts, base)
         self.assertEqual(expceted, base)
 
+    def mock_handle_intype(self, return_values=None, **kwargs):
+        if return_values and isinstance(return_values, list):
+            kwargs["side_effect"] = return_values
+        elif return_values:
+            kwargs["return_value"] = return_values
+
+        self.command.handle_input_type = mock.Mock(**kwargs)
+        
+    def test_parse_intype_empty_sentence(self):
+        intype = self.prep_intype(False, False)
+        self.mock_handle_intype()
+        self.assertIsNone(self.command._parse_intype(intype, []))
+        self.command.handle_input_type.assert_not_called()
+
+    def test_parse_intype_not_completeable_empty_sentence(self):
+        intype = self.prep_intype(False, False, completable=False)
+        self.mock_handle_intype()
+        self.assertEqual([], self.command._parse_intype(intype, []))
+        self.command.handle_input_type.assert_not_called()
+
+
+    def test_parse_intype_completable_out_of_text(self):
+        intype = self.prep_intype(True, False, completable=False)
+        self.mock_handle_intype(HandlerStatus.PROCESSING)
+        s = ["foo", "bar", "hello", "world"]
+        s_bck = s.copy()
+        self.assertEqual(s_bck, self.command._parse_intype(intype, s))
+        self.assertEqual([], s)
+        self.assertEqual(4, self.command.handle_input_type.call_count)
+
+    def __get_statuses(self):
+        return (HandlerStatus.NOT_FOUND, HandlerStatus.PROCESSING, 
+                HandlerStatus.DONE)
+    def test_parse_intype_out_of_text(self):
+        intype = self.prep_intype(True, False)
+        self.mock_handle_intype(HandlerStatus.PROCESSING)
+        s = ["foo", "bar", "test"]
+        s_bck = s.copy()
+        
+        self.assertIsNone(self.command._parse_intype(intype, s))
+        self.assertEqual(s_bck, s)
+        self.assertEqual(2, len(self.command.handle_input_type.call_args))
+
+    def test_parse_intype(self):
+        intype = self.prep_intype(True, False)
+        _, p, d = self.__get_statuses()
+        self.mock_handle_intype([p] * 3 + [d])
+        
+        s = ["foo", "bar", "hello", "world", "foobar", "barfoo"]
+        s_bck = s.copy()
+
+        self.assertEqual(s_bck[:4], self.command._parse_intype(intype, s))
+        self.assertEqual(s_bck[4:], s)
+        
+
 
 class CommandFunctionalTestsMeta(type):
 
@@ -119,8 +175,8 @@ class CommandFunctionalTestsMeta(type):
         def gen_is_command(sentence):
             def test_is_command(self):
                 command, matches = is_command(sentence) or (None, None)
-                # self.assertIsNotNone(command, "No command found")
-                # self.assertIsNotNone(matches, "No command found")
+                self.assertIsNotNone(command, "No command found")
+                self.assertIsNotNone(matches, "No command found")
 
                 if matches:
                     matches_fmt = ("{}: {}".format(*s) for s in matches or [])
