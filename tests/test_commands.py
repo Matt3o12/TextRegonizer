@@ -194,11 +194,10 @@ class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
             "time": ["at", "5:30am"],
             "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
         },
-        # TODO: This test fails, investigate later
-        # "remind me to do some cool and and awesome stuff at 5pm": {
-        #     "time": ["at", "5pm"],
-        #     "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
-        # },
+        "remind me to do some cool and awesome stuff at 5pm": {
+            "time": ["at", "5pm"],
+            "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
+        },
     }
 
     invalid_commands = [
@@ -208,3 +207,7 @@ class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
         "remid me to do something tomorrow",
         "5pm remind me to do something",
     ]
+
+
+print(ReminderCommand().matches(
+    "remind me to do some and and awesome stuff at 5am"))

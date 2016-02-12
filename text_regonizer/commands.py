@@ -35,7 +35,7 @@ class Command:
 
             parts = self._parse_intype(intype, subsentence)
             if parts is not None:
-                del sentence[i + 1:]
+                del sentence[-i:]
                 return parts
 
         return False
