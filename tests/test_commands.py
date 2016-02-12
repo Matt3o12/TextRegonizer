@@ -11,43 +11,8 @@ class BaseCommandTestCase:
     pass
 
 
-class TestAnyResult(unittest.TestCase):
-    needle = "I'm what ya lookin for"
-
-    def test_no_input(self):
-        self.assert_no_result([])
-
-    def test_falsy_input(self):
-        self.assert_no_result([False])
-        self.assert_no_result([False, False])
-        self.assert_no_result([False, None, "", [], {}])
-
-    def assert_needle(self, *values):
-        self.assertEqual(self.needle, any_result(*values))
-
-    def assert_no_result(self, *values):
-        self.assertFalse(any_result(*values))
-
-    def test_input(self):
-        self.assert_needle([self.needle])
-        self.assert_needle([self.needle, False])
-        self.assert_needle([False, "", None, self.needle, {}])
-
-    def test_input_with_key(self):
-        self.needle = (False, "hello world")
-        key = lambda x: x[1]
-        self.assert_needle([self.needle], key)
-        self.assert_needle([self.needle, (False, False)], key)
-        self.assert_needle([(True, False), (False, False), self.needle], key)
-
-    def test_input_with_key_invalid(self):
-        key = lambda x: x[0]
-        self.assert_no_result([], key)
-        self.assert_no_result([(False, False)], key)
-        self.assert_no_result([(False, True), (False, False)], key)
-
-
 class TestCommand(unittest.TestCase):
+
     def setUp(self):
         self.command = Command()
         self.move_method = self.command._Command__move_parts_back
@@ -104,7 +69,7 @@ class TestCommand(unittest.TestCase):
             kwargs["return_value"] = return_values
 
         self.command.handle_input_type = mock.Mock(**kwargs)
-        
+
     def test_parse_intype_empty_sentence(self):
         intype = self.prep_intype(False, False)
         self.mock_handle_intype()
@@ -117,7 +82,6 @@ class TestCommand(unittest.TestCase):
         self.assertEqual([], self.command._parse_intype(intype, []))
         self.command.handle_input_type.assert_not_called()
 
-
     def test_parse_intype_completable_out_of_text(self):
         intype = self.prep_intype(True, False, completable=False)
         self.mock_handle_intype(HandlerStatus.PROCESSING)
@@ -128,14 +92,15 @@ class TestCommand(unittest.TestCase):
         self.assertEqual(4, self.command.handle_input_type.call_count)
 
     def __get_statuses(self):
-        return (HandlerStatus.NOT_FOUND, HandlerStatus.PROCESSING, 
+        return (HandlerStatus.NOT_FOUND, HandlerStatus.PROCESSING,
                 HandlerStatus.DONE)
+
     def test_parse_intype_out_of_text(self):
         intype = self.prep_intype(True, False)
         self.mock_handle_intype(HandlerStatus.PROCESSING)
         s = ["foo", "bar", "test"]
         s_bck = s.copy()
-        
+
         self.assertIsNone(self.command._parse_intype(intype, s))
         self.assertEqual(s_bck, s)
         self.assertEqual(2, len(self.command.handle_input_type.call_args))
@@ -144,13 +109,12 @@ class TestCommand(unittest.TestCase):
         intype = self.prep_intype(True, False)
         _, p, d = self.__get_statuses()
         self.mock_handle_intype([p] * 3 + [d])
-        
+
         s = ["foo", "bar", "hello", "world", "foobar", "barfoo"]
         s_bck = s.copy()
 
         self.assertEqual(s_bck[:4], self.command._parse_intype(intype, s))
         self.assertEqual(s_bck[4:], s)
-        
 
 
 class CommandFunctionalTestsMeta(type):
@@ -171,8 +135,8 @@ class CommandFunctionalTestsMeta(type):
 
             return test_command_invalid
 
-
         def gen_is_command(sentence):
+
             def test_is_command(self):
                 command, matches = is_command(sentence) or (None, None)
                 self.assertIsNotNone(command, "No command found")

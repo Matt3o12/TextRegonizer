@@ -1,22 +1,12 @@
 from enum import Enum
 from text_regonizer.inputs import ArbitaryInput, TimeInput, InputType, StringInput
+from text_regonizer.common import any_result
 
 
 class HandlerStatus(Enum):
     DONE = 1
     PROCESSING = 2
     NOT_FOUND = 3
-
-
-def any_result(iterable, key=None):
-    if key is None:
-        key = lambda x: x
-
-    for element in iterable:
-        if key(element):
-            return element
-
-    return False
 
 
 class Command:
@@ -105,8 +95,8 @@ class Command:
                 return parts
 
         self.__move_parts_back(parts, sentence)
-        raise RuntimeError("This state should never have been reached. "
-                + "Please create a bug report")
+        raise RuntimeError("This state should never have been reached. " +
+                           "Please create a bug report")
 
     def handle_input_type(self, parts, intype):
         if not intype.is_part_of_input(parts):
@@ -133,4 +123,5 @@ def is_command(sentence):
     commands = [ReminderCommand(), WeatherCommand()]
     foo = ReminderCommand().matches(sentence)
     key = lambda x: x and x[1]
+
     return any_result(((c, c.matches(sentence)) for c in commands), key)
