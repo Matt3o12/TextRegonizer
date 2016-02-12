@@ -7,14 +7,14 @@ python:
 install: 
     - pip install coveralls
     - pip install -r requirements.txt
-    - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "develop" ]
-        then pip install yapf
+    - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "develop" ];
+    -   then pip install yapf
     - fi
 
 script: 
     - coverage run -m unittest
-    - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "develop" ]
-        then yapf -ri --style=google text_regonizer/ tests/ || exit $?
+    - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "develop" ];
+    -   then yapf -ri --style=google text_regonizer/ tests/ || exit $?
     - fi
 
 after_success:
