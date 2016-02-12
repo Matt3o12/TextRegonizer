@@ -3,7 +3,9 @@ import io
 
 from text_regonizer.actions import Action, WeatherAction
 
+
 class TestAction(unittest.TestCase):
+
     def setUp(self):
         self.action = Action({})
 
@@ -14,10 +16,10 @@ class TestAction(unittest.TestCase):
 
     def test_get_action_name(self):
         self.assertEqual("action", self.action.get_action_name())
-        
 
 
 class TestWeatherAction(unittest.TestCase):
+
     def setUp(self):
         self.action = WeatherAction({})
 

@@ -8,6 +8,7 @@ def any_result(iterable, key=None):
 
     return False
 
+
 def came2underscore(sentence):
     new = []
     for i, char in enumerate(sentence):

@@ -8,19 +8,34 @@ class InputTypeException(Exception):
 class InputType:
     completable = True
 
+    def __init__(self, key=None):
+        self.key = key
+
     def is_part_of_input(self, parts):
         return True
 
     def is_input_completed(self, parts):
         return True
 
+    def set_result(self, results, parts):
+        if self.key:
+            results[self.key] = parts
+            return True
+
+        return False
 
 class StringInput(InputType):
 
     def __init__(self, expected_parts):
+
+        # StringInput doesn't need a key since it does
+        # not map to any values.
+        super().__init__(None)
+
         self.expected_parts = expected_parts
         if isinstance(self.expected_parts, str):
             self.expected_parts = self.expected_parts.split(" ")
+
 
     def is_input_completed(self, parts):
         return parts == self.expected_parts

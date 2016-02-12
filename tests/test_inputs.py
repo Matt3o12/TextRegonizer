@@ -65,6 +65,28 @@ class TestInputType(BaseInputTypeTestCase, TestCase):
     def setUp(self):
         self.intype = inputs.InputType()
 
+    def test_key(self):
+        intype = inputs.InputType("hello_world")
+        self.assertEqual("hello_world", intype.key)
+        self.assertIsNone(inputs.InputType().key)
+
+    def test_set_result_no_key(self):
+        results = {}
+        status = self.intype.set_result(results, "hello world")
+        self.assertFalse(status)
+        self.assertEqual({}, results)
+        
+    def test_result(self):
+        results = {"foo": "hello"}
+        expected = {"foo": "hello", "bar": "world"}
+        intype = inputs.InputType("bar")
+
+        status = intype.set_result(results, "world")
+
+        self.assertTrue(status)
+        self.assertEqual(expected, results)
+
+
 
 class TestArbitaryInput(BaseInputTypeTestCase, TestCase):
     completable = False

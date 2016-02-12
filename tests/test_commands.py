@@ -12,7 +12,6 @@ class BaseCommandTestCase:
 
 
 class TestCommand(unittest.TestCase):
-
     def setUp(self):
         self.command = Command()
         self.move_method = self.command._Command__move_parts_back
