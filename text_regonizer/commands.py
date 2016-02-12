@@ -1,6 +1,7 @@
 from enum import Enum
 from text_regonizer.inputs import ArbitaryInput, TimeInput, InputType, StringInput
 from text_regonizer.common import any_result
+from text_regonizer import actions
 
 
 class HandlerStatus(Enum):
@@ -41,7 +42,7 @@ class Command:
 
     def _match_structure(self, sentence, structure):
         sentence = sentence.split(" ")
-        result = []
+        results = {}
 
         uncompletable_input_present = False
         lookahead_parts = None
@@ -58,7 +59,8 @@ class Command:
                 raise InputTypeException("There was already an uncompletable " +
                                          "input type present.")
             elif not intype.completable and i + 1 < len(structure):
-                lookahead_parts = self._lookahead(sentence, structure[i + 1])
+                lookahead_intype = structure[i + 1]
+                lookahead_parts = self._lookahead(sentence, lookahead_intype)
                 if not lookahead_parts:
                     return False
 
@@ -66,13 +68,11 @@ class Command:
             if parts is None and intype.completable:
                 return False
 
-            result.append((type(intype).__name__, " ".join(parts) if parts else
-                           parts))
+            intype.set_result(results, parts)
             if lookahead_parts:
-                result.append((type(structure[i + 1]).__name__, lookahead_parts
-                              ))
+                lookahead_intype.set_result(results, lookahead_parts)
 
-        return result
+        return results or True
 
     def __move_parts_back(self, parts, sentence):
         for i, part in enumerate(parts):
@@ -114,8 +114,10 @@ class WeatherCommand(Command):
 
 class ReminderCommand(Command):
     structures = [
-        (TimeInput(), StringInput("remind me to"), ArbitaryInput()),
-        (StringInput("remind me to"), ArbitaryInput(), TimeInput()),
+        (TimeInput("time"), StringInput("remind me to"),
+         ArbitaryInput("reminder")),
+        (StringInput("remind me to"), ArbitaryInput("reminder"),
+         TimeInput("time")),
     ]
 
 

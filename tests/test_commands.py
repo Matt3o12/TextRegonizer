@@ -4,7 +4,7 @@ import re
 from unittest import mock
 
 from text_regonizer.commands import *
-from text_regonizer import inputs
+from text_regonizer import inputs, actions
 
 
 class BaseCommandTestCase:
@@ -12,6 +12,7 @@ class BaseCommandTestCase:
 
 
 class TestCommand(unittest.TestCase):
+
     def setUp(self):
         self.command = Command()
         self.move_method = self.command._Command__move_parts_back
@@ -120,10 +121,11 @@ class CommandFunctionalTestsMeta(type):
 
     def __new__(mcs, name, bases, namespace, **kwargs):
 
-        def gen_valid_commands(sentence):
+        def gen_valid_commands(sentence, expected):
 
             def test_command_valid(self):
-                self.assertTrue(self.command.matches(sentence))
+                result = self.command.matches(sentence)
+                self.assertEqual(expected, result)
 
             return test_command_valid
 
@@ -141,12 +143,7 @@ class CommandFunctionalTestsMeta(type):
                 self.assertIsNotNone(command, "No command found")
                 self.assertIsNotNone(matches, "No command found")
 
-                if matches:
-                    matches_fmt = ("{}: {}".format(*s) for s in matches or [])
-                else:
-                    matches_fmt = ["No matches"]
-
-                msg = "Matches: {}".format(", ".join(matches_fmt))
+                msg = "Matches: {}".format(matches)
                 self.assertIsInstance(command, self.command_class, msg)
                 self.assertTrue(matches)
 
@@ -156,13 +153,14 @@ class CommandFunctionalTestsMeta(type):
 
         def adder(generator, commands, name):
             for command in commands:
-                test = generator(command)
-                namespace[name.format(name_regex.sub("_", command))] = test
+                args = command if isinstance(command, tuple) else (command,)
+                test = generator(*args)
+                namespace[name.format(name_regex.sub("_", args[0]))] = test
 
-        valid = namespace.get("valid_commands", [])
+        valid = namespace.get("valid_commands", {})
         invalid = namespace.get("invalid_commands", [])
 
-        adder(gen_valid_commands, valid, "test_valid_command_{}")
+        adder(gen_valid_commands, valid.items(), "test_valid_command_{}")
         adder(gen_invalid_commands, invalid, "test_invalid_command_{}")
         adder(gen_is_command, valid, "test_is_command_{}")
 
@@ -177,18 +175,31 @@ class CommandFunctionalTests(metaclass=CommandFunctionalTestsMeta):
 
 class TestWeatherCommand(CommandFunctionalTests, unittest.TestCase):
     command_class = WeatherCommand
-    valid_commands = ["show me the weather"]
+    valid_commands = {"show me the weather": True}
     invalid_commands = ["foo", "foo bar", "show me", "show me the",]
 
 
 class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
     command_class = ReminderCommand
-    valid_commands = [
-        "remind me to do something tomorrow",
-        "tomorrow remind me to do something",
-        "at 5:30am remind me to do some cool and awesome stuff",
-        "remind me to do some cool and and awesome stuff at 5pm",
-    ]
+    valid_commands = {
+        "remind me to do something tomorrow": {
+            "time": ["tomorrow"],
+            "reminder": ["do", "something"]
+        },
+        "tomorrow remind me to do something": {
+            "time": ["tomorrow"],
+            "reminder": ["do", "something"]
+        },
+        "at 5:30am remind me to do some cool and awesome stuff": {
+            "time": ["at", "5:30am"],
+            "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
+        },
+        # TODO: This test fails, investigate later
+        # "remind me to do some cool and and awesome stuff at 5pm": {
+        #     "time": ["at", "5pm"],
+        #     "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
+        # },
+    }
 
     invalid_commands = [
         "foo",

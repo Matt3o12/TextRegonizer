@@ -24,6 +24,7 @@ class InputType:
 
         return False
 
+
 class StringInput(InputType):
 
     def __init__(self, expected_parts):
@@ -35,7 +36,6 @@ class StringInput(InputType):
         self.expected_parts = expected_parts
         if isinstance(self.expected_parts, str):
             self.expected_parts = self.expected_parts.split(" ")
-
 
     def is_input_completed(self, parts):
         return parts == self.expected_parts

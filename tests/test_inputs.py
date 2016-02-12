@@ -75,7 +75,7 @@ class TestInputType(BaseInputTypeTestCase, TestCase):
         status = self.intype.set_result(results, "hello world")
         self.assertFalse(status)
         self.assertEqual({}, results)
-        
+
     def test_result(self):
         results = {"foo": "hello"}
         expected = {"foo": "hello", "bar": "world"}
@@ -85,7 +85,6 @@ class TestInputType(BaseInputTypeTestCase, TestCase):
 
         self.assertTrue(status)
         self.assertEqual(expected, results)
-
 
 
 class TestArbitaryInput(BaseInputTypeTestCase, TestCase):
