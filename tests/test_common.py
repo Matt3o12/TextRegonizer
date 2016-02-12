@@ -1,6 +1,6 @@
 import unittest
 
-from text_regonizer.common import any_result
+from text_regonizer.common import any_result, came2underscore
 
 
 class TestAnyResult(unittest.TestCase):
@@ -37,3 +37,12 @@ class TestAnyResult(unittest.TestCase):
         self.assert_no_result([], key)
         self.assert_no_result([(False, False)], key)
         self.assert_no_result([(False, True), (False, False)], key)
+
+class TestCamleCaseToUnderscore(unittest.TestCase):
+    def test_came_to_underscore(self):
+        self.assertEqual("test", came2underscore("Test"))
+        self.assertEqual("hello_world", came2underscore("HelloWorld"))
+        self.assertEqual("foo_bar", came2underscore("fooBar"))
+        self.assertEqual("foo_bar_hello_test_bar_foo", 
+                came2underscore("fooBarHelloTestBarFoo"))
+
