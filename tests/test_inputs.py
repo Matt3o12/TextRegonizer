@@ -1,5 +1,10 @@
+import re
 from text_regonizer import inputs
-from unittest import TestCase
+from unittest import TestCase, mock
+
+from datetime import datetime, timedelta
+from freezegun import freeze_time
+from tests import TEST_TIME
 
 
 class TestInputTypeMeta(type):
@@ -47,6 +52,10 @@ class TestInputTypeMeta(type):
         add("{}is_input_completed_{}", gen_input_completed)
         add("{}is_not_part_of_input_{}", gen_is_not_part)
 
+        method_adder = namespace.get("add_methods", None)
+        if method_adder:
+            method_adder(mcs, name, bases, namespace, **kwargs)
+
         return type.__new__(mcs, name, bases, namespace, **kwargs)
 
 
@@ -86,6 +95,19 @@ class TestInputType(BaseInputTypeTestCase, TestCase):
         self.assertTrue(status)
         self.assertEqual(expected, results)
 
+    def test_result_normalize_input(self):
+        results = {"foo": "bar"}
+        normalized = mock.Mock()
+        expected = {"foo": "bar", "foobar": normalized}
+        intype = inputs.InputType("foobar")
+        intype.normalize_parts = mock.Mock(return_value=normalized)
+
+        status = intype.set_result(results, "raw")
+        self.assertTrue(status)
+        self.assertEqual(expected, results)
+        self.assertIs(normalized, results["foobar"])
+        intype.normalize_parts.assert_called_once_with("raw")
+
 
 class TestArbitaryInput(BaseInputTypeTestCase, TestCase):
     completable = False
@@ -110,6 +132,7 @@ class StringInput(BaseInputTypeTestCase, TestCase):
         self.intype = inputs.StringInput("hello world. test")
 
 
+@freeze_time(TEST_TIME)
 class TestTimeInput(BaseInputTypeTestCase, TestCase):
     completable = True
 
@@ -123,6 +146,33 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
 
     is_part_of_input_parts = ["at"]
     is_not_part_of_input_parts = ["hello", "foo bar"]
+
+    normalized_results = {
+        "at 5pm": TEST_TIME.replace(hour=5 + 12),
+        "at 1am": TEST_TIME.replace(hour=1),
+        "at 2:30pm": TEST_TIME.replace(hour=2 + 12, minute=30),
+        "at 1:14am": TEST_TIME.replace(hour=1, minute=14),
+        "today": TEST_TIME.replace(hour=2 + 12),
+        # "tomorrow": TEST_TIME.replace(hour=9) + timedelta(days=1), TODO
+        "tonight": TEST_TIME.replace(hour=6 + 12),
+    }  # yapf: disable
+
+    def add_methods(mcs, name, bases, namespace, **kwargs):
+
+        def gen_normalized(raw, expected):
+
+            def test_normalized_parts(self):
+                got = self.intype.normalize_parts(raw.split(" "))
+                got = got.replace(second=0, microsecond=0)
+                self.assertEqual(expected, got)
+
+            return test_normalized_parts
+
+        name_regex = re.compile(r"[^a-z0-9]")
+        for raw, expected in namespace["normalized_results"].items():
+            test = gen_normalized(raw, expected)
+            name = "test_normalized_parts_{}".format(name_regex.sub("_", raw))
+            namespace[name] = test
 
     def setUp(self):
         self.intype = inputs.TimeInput()

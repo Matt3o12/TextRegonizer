@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 
 class InputTypeException(Exception):
@@ -19,10 +20,13 @@ class InputType:
 
     def set_result(self, results, parts):
         if self.key:
-            results[self.key] = parts
+            results[self.key] = self.normalize_parts(parts)
             return True
 
         return False
+
+    def normalize_parts(self, parts):
+        return parts
 
 
 class StringInput(InputType):
@@ -52,11 +56,15 @@ class ArbitaryInput(InputType):
 
 
 class TimeInput(InputType):
-    fixed_times = {"today": "2:00pm", "tonight": "6:00pm", "tomorrow": "9am",}
+    fixed_times = {
+        "today": "at 2:00pm",
+        "tonight": "at 6:00pm",
+        "tomorrow": "at 9am",  # TODO: add support for adding one day.
+    }
 
     time_regexes = [
         r"^at (?P<hour>[0-9]{1,2})" +
-        "(?:\:(?P<mintue>[]0-9]{2}))?(?P<period>am|pm)$",
+        "(?:\:(?P<minute>[]0-9]{2}))?(?P<period>am|pm)$",
         # Do more like tomorrow, on sunday, on sunday 9pm, ...
     ]
 
@@ -64,15 +72,35 @@ class TimeInput(InputType):
         return (len(parts) == 1 and parts[0] == "at" or
                 self.is_input_completed(parts))
 
+    def _get_matches(self, parts):
+        for test in self.time_regexes:
+            matches = re.match(test, parts)
+            if matches:
+                return matches
+
+        return None
+
     def is_input_completed(self, parts):
         parts = " ".join(parts)
         if parts in self.fixed_times:
             return True
 
-        for test in self.time_regexes:
-            if re.match(test, parts):
-                return True
+        return bool(self._get_matches(parts))
 
-        return False
+    def normalize_parts(self, parts):
+        parts = " ".join(parts)
+        parts = self.fixed_times.get(parts, parts)
 
-    # TODO: make set_result use a time type instead of str.
+        matches = self._get_matches(parts)
+        if not matches:
+            msg = "parts: '{}' must be a valid TimeInput"
+            raise InputTypeException(msg.format(parts.split(" ")))
+
+        parsed = matches.groupdict()
+        replacements = {"hour": int(parsed["hour"])}
+        if parsed["period"] == "pm":
+            replacements["hour"] += 12
+
+        replacements["minute"] = int(parsed.get("minute", 0) or 0)
+
+        return datetime.now().replace(**replacements)

@@ -3,8 +3,11 @@ import re
 
 from unittest import mock
 
+from tests import TEST_TIME
 from text_regonizer.commands import *
 from text_regonizer import inputs, actions
+
+from freezegun import freeze_time
 
 
 class BaseCommandTestCase:
@@ -199,26 +202,27 @@ class TestWeatherCommand(CommandFunctionalTests, unittest.TestCase):
         self.assertEqual(actions.WeatherAction({}), action)
 
 
+@freeze_time(TEST_TIME)
 class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
     command_class = ReminderCommand
     valid_commands = {
-        "remind me to do something tomorrow": {
-            "time": ["tomorrow"],
+        "remind me to do something tonight": {
+            "time": TEST_TIME.replace(hour=6 + 12),
             "reminder": ["do", "something"]
         },
-        "tomorrow remind me to do something": {
-            "time": ["tomorrow"],
+        "tonight remind me to do something": {
+            "time": TEST_TIME.replace(hour=6 + 12),
             "reminder": ["do", "something"]
         },
         "at 5:30am remind me to do some cool and awesome stuff": {
-            "time": ["at", "5:30am"],
-            "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
+            "time": TEST_TIME.replace(hour=5, minute=30),
+            "reminder": ["do", "some", "cool", "and", "awesome", "stuff"],
         },
         "remind me to do some cool and awesome stuff at 5pm": {
-            "time": ["at", "5pm"],
+            "time": TEST_TIME.replace(hour=5 + 12),
             "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
         },
-    }
+    }  # yapf: disable
 
     invalid_commands = [
         "foo",
