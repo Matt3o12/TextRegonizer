@@ -116,6 +116,21 @@ class TestCommand(unittest.TestCase):
         self.assertEqual(s_bck[:4], self.command._parse_intype(intype, s))
         self.assertEqual(s_bck[4:], s)
 
+    def test_to_action(self):
+        mocked_action = mock.Mock(actions.Action)
+        self.command.action_class = mock.Mock(return_value=mocked_action)
+        inputs = mock.Mock(dict)
+
+        self.assertIs(mocked_action, self.command.to_action(inputs))
+        self.command.action_class.assert_called_once_with(inputs)
+
+    def test_to_action_true(self):
+        action = mock.Mock(actions.Action)
+        self.command.action_class = mock.Mock(return_value=action)
+
+        self.assertIs(action, self.command.to_action(True))
+        self.command.action_class.assert_called_once_with({})
+
 
 class CommandFunctionalTestsMeta(type):
 
@@ -178,6 +193,11 @@ class TestWeatherCommand(CommandFunctionalTests, unittest.TestCase):
     valid_commands = {"show me the weather": True}
     invalid_commands = ["foo", "foo bar", "show me", "show me the",]
 
+    def test_to_action(self):
+        result = self.command.matches("show me the weather")
+        action = self.command.to_action(result)
+        self.assertEqual(actions.WeatherAction({}), action)
+
 
 class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
     command_class = ReminderCommand
@@ -207,3 +227,8 @@ class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
         "remid me to do something tomorrow",
         "5pm remind me to do something",
     ]
+
+    def test_to_action(self):
+        results = {'time': ['tomorrow'], 'reminder': ['do', 'something']}
+        action = self.command.to_action(results)
+        self.assertEqual(actions.ReminderAction(results), action)

@@ -20,6 +20,16 @@ class Action:
                 "inputs": self.inputs
             }, stream, **kwargs)
 
+    def __eq__(self, other):
+        if isinstance(other, Action):
+            return self.inputs == other.inputs
+
+        return False
+
+    def __repr__(self):
+        c = type(self)
+        return "{}.{}({!r})".format(self.__module__, c.__name__, self.inputs)
+
 
 class WeatherAction(Action):
 

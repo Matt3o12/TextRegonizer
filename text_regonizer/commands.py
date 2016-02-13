@@ -107,12 +107,28 @@ class Command:
 
         return HandlerStatus.PROCESSING
 
+    def to_action(self, results):
+        """
+        Returns corresponding action. results are the
+        results returned by match.
+        """
+
+        if results is True:
+            # results is True if the command was a match
+            # but no parts could be extracted (i.e. it was a
+            # static command such as the weather command.
+            results = {}
+
+        return self.action_class(results)
+
 
 class WeatherCommand(Command):
     structures = [(StringInput("show me the weather"),)]
+    action_class = actions.WeatherAction
 
 
 class ReminderCommand(Command):
+    action_class = actions.ReminderAction
     structures = [
         (TimeInput("time"), StringInput("remind me to"),
          ArbitaryInput("reminder")),
