@@ -74,3 +74,5 @@ class TimeInput(InputType):
                 return True
 
         return False
+
+    # TODO: make set_result use a time type instead of str.

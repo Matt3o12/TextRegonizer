@@ -207,7 +207,3 @@ class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
         "remid me to do something tomorrow",
         "5pm remind me to do something",
     ]
-
-
-print(ReminderCommand().matches(
-    "remind me to do some and and awesome stuff at 5am"))

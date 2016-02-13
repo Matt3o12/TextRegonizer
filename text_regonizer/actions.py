@@ -13,11 +13,19 @@ class Action:
     def do_action(self):
         raise NotImplementedError("do_action needs to implemented.")
 
-    def dump_action(self, stream):
-        json.dump({"action": None}, stream)
+    def dump_action(self, stream, **kwargs):
+        json.dump(
+            {
+                "action": self.get_action_name(),
+                "inputs": self.inputs
+            }, stream, **kwargs)
 
 
 class WeatherAction(Action):
 
     def do_action(self):
         pass
+
+
+class ReminderAction(Action):
+    pass
