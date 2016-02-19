@@ -1,6 +1,8 @@
 import unittest
 
-from text_regonizer.common import any_result, came2underscore
+from text_regonizer.common import any_result, came2underscore, next_weekday, weekday_to_num
+from dateutil.parser import parse as parse_time
+from datetime import timedelta
 
 
 class TestAnyResult(unittest.TestCase):
@@ -47,3 +49,58 @@ class TestCamleCaseToUnderscore(unittest.TestCase):
         self.assertEqual("foo_bar", came2underscore("fooBar"))
         self.assertEqual("foo_bar_hello_test_bar_foo",
                          came2underscore("fooBarHelloTestBarFoo"))
+
+
+class TestWeekdayToNum(unittest.TestCase):
+    def assert_weekday(self, weekday, expected):
+        self.assertEqual(expected, weekday_to_num(weekday))
+        
+    def assert_not_weekday(self, weekday):
+        self.assertEqual(-1, weekday_to_num(weekday))
+
+    def test_abbr(self):
+        self.assert_weekday("Mon", 0)
+        self.assert_weekday("Tue", 1)
+        self.assert_weekday("Wed", 2)
+        self.assert_weekday("Thu", 3)
+        self.assert_weekday("Fri", 4)
+        self.assert_weekday("Sat", 5)
+        self.assert_weekday("Sun", 6)
+
+    def test_names(self):
+        self.assert_weekday("Monday", 0)
+        self.assert_weekday("Tuesday", 1)
+        self.assert_weekday("Wednesday", 2)
+        self.assert_weekday("Thursday", 3)
+        self.assert_weekday("Friday", 4)
+        self.assert_weekday("Saturday", 5)
+        self.assert_weekday("Sunday", 6)
+
+    def test_not_found(self):
+        self.assert_not_weekday("Mo")
+        self.assert_not_weekday("foo")
+        self.assert_not_weekday("bar")
+        
+
+
+class TestNextWeekday(unittest.TestCase):
+    def setUp(self):
+        self.default = parse_time("Thu, Feb 4 2016")
+
+    def next_weekday(self, weekday):
+        return next_weekday(self.default, weekday)
+
+    def test_same_day(self):
+        self.assertEqual(self.default, self.next_weekday("Thu"))
+        self.assertEqual(self.default, self.next_weekday("Thursday"))
+        self.assertEqual(self.default, self.next_weekday(3))
+
+    def test_next_weekday(self):
+        d = lambda n: self.default + timedelta(days=n)
+        self.assertEqual(d(1), self.next_weekday("Fri"))
+        self.assertEqual(d(2), self.next_weekday("Sat"))
+        self.assertEqual(d(3), self.next_weekday("Sun"))
+        self.assertEqual(d(4), self.next_weekday("Mon"))
+        self.assertEqual(d(5), self.next_weekday("Tue"))
+        self.assertEqual(d(6), self.next_weekday("Wed"))
+
