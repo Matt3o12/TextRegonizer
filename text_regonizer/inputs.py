@@ -1,9 +1,16 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
+from enum import Enum
 
 
 class InputTypeException(Exception):
-    pass
+    def __init__(self, message=None, parts=None):
+        if parts is not None:
+            parts = parts.split(" ") if isinstance(parts, str) else parts
+            message = "parts: '{}' must be a valid TimeInput"
+            message = message.format(parts)
+
+        super().__init__(message)
 
 
 class InputType:
@@ -55,22 +62,83 @@ class ArbitaryInput(InputType):
         return False
 
 
+class dict_copy_value(dict):
+    """
+    Dict that copys the value on get
+    """
+
+    def __getitem__(self, key):
+        return super().__getitem__(key).copy()
+
 class TimeInput(InputType):
-    fixed_times = {
-        "today": "at 2:00pm",
-        "tonight": "at 6:00pm",
-        "tomorrow": "at 9am",  # TODO: add support for adding one day.
-    }
+    beginning_times = dict_copy_value({
+        "today": {"hour": 2 + 12},
+        "tonight": {"hour": 6 + 12,
+                    "night": True},
+        "tomorrow": {"hour": 9,
+                     "delta": timedelta(days=1)},
+    })
+
+    terminal_times = dict_copy_value({"noon": {"hour": 12},})
+
+    terminal_regex = re.compile(
+        r"^(?P<hour>[0-9]{1,2})" +
+        "(?:\:(?P<minute>[]0-9]{2}))?(?P<period>am|pm)?$")
 
     time_regexes = [
         r"^at (?P<hour>[0-9]{1,2})" +
         "(?:\:(?P<minute>[]0-9]{2}))?(?P<period>am|pm)$",
-        # Do more like tomorrow, on sunday, on sunday 9pm, ...
     ]
 
-    def is_part_of_input(self, parts):
-        return (len(parts) == 1 and parts[0] == "at" or
-                self.is_input_completed(parts))
+    def _replace_time(self, time, replacements):
+        delta = replacements.pop("delta", timedelta())
+        return time.replace(**replacements) + delta
+
+    def _replace_regex(self, time, parts, current, night=False):
+        match = self.terminal_regex.match(current)
+        if not match:
+            raise InputTypeException(parts=parts)
+
+        parsed = match.groupdict()
+        replacements = {"hour": int(parsed["hour"])}
+        if parsed.get("period", "am") == "pm" or night:
+            replacements["hour"] += 12
+
+        replacements["minute"] = int(parsed.get("minute", None) or 0)
+        return time.replace(**replacements)
+
+    def _parse_input(self, parts):
+        """
+        Returns the time for the given parts. False if the input is not
+        complete and raises InputTypeException if the input is invalid.
+        """
+
+        terminal_input = False
+        completable = False
+        time = datetime.now()
+        night = False
+        for i, part in enumerate(parts):
+            if part == "at":
+                terminal_input = True
+                completable = False
+            elif terminal_input:
+                if i + 1 < len(parts):
+                    raise InputTypeException(parts=parts)
+
+                if part in self.terminal_times:
+                    return self._replace_time(time, self.terminal_times[part])
+
+                return self._replace_regex(time, parts, part, night)
+            else:
+                if part in self.beginning_times:
+                    replacements = self.beginning_times[part]
+                    night = replacements.pop("night", False)
+                    time = self._replace_time(time, replacements)
+                    completable = True
+                else:
+                    raise InputTypeException(parts=parts)
+
+        return time if completable else False
 
     def _get_matches(self, parts):
         for test in self.time_regexes:
@@ -79,28 +147,25 @@ class TimeInput(InputType):
                 return matches
 
         return None
+    
+    def normalize_parts(self, parts):
+        time = self._parse_input(parts)
+        if time is False:
+            msg = "Input not completed, parts: {}"
+            raise InputTypeException(msg.format(parts))
+
+        return time
 
     def is_input_completed(self, parts):
-        parts = " ".join(parts)
-        if parts in self.fixed_times:
+        try:
+            return bool(self._parse_input(parts))
+        except InputTypeException:
+            return False
+
+    def is_part_of_input(self, parts):
+        try:
+            self._parse_input(parts)
             return True
+        except InputTypeException:
+            return False
 
-        return bool(self._get_matches(parts))
-
-    def normalize_parts(self, parts):
-        parts = " ".join(parts)
-        parts = self.fixed_times.get(parts, parts)
-
-        matches = self._get_matches(parts)
-        if not matches:
-            msg = "parts: '{}' must be a valid TimeInput"
-            raise InputTypeException(msg.format(parts.split(" ")))
-
-        parsed = matches.groupdict()
-        replacements = {"hour": int(parsed["hour"])}
-        if parsed["period"] == "pm":
-            replacements["hour"] += 12
-
-        replacements["minute"] = int(parsed.get("minute", 0) or 0)
-
-        return datetime.now().replace(**replacements)

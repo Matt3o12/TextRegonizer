@@ -138,14 +138,20 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
 
     is_input_completed_parts = [
         "today", "tomorrow", "tonight", "at 3pm", "at 7pm", "at 2am",
-        "at 2:30am", "at 4:20pm"
+        "at 2:30am", "at 4:20pm", "at 5:30am", "tonight at 10", "at 5",
+        "at 9",
     ]
     is_input_not_completed_parts = [
-        "at 5", "at 5:20", "at", "noon", "foo bar", "barz", "never"
+        "at", "noon", "foo bar", "barz", "never", "at foo", "at bar",
+        "tomorrow foo", "tomorrow at foo", "tomorrow noon", "noon at",
+        "at tomorrow", "tommorow at 5pm bar",
     ]
 
-    is_part_of_input_parts = ["at"]
-    is_not_part_of_input_parts = ["hello", "foo bar"]
+    is_part_of_input_parts = ["at", "tonight at", "tomorrow at"]
+    is_not_part_of_input_parts = [
+        "hello", "foo bar", "tomorrow foo", "tomorrow at foo",
+        "at foo", "at tomorrow", "tomorrow at 5pm foo",
+    ]
 
     normalized_results = {
         "at 5pm": TEST_TIME.replace(hour=5 + 12),
@@ -155,6 +161,9 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
         "today": TEST_TIME.replace(hour=2 + 12),
         # "tomorrow": TEST_TIME.replace(hour=9) + timedelta(days=1), TODO
         "tonight": TEST_TIME.replace(hour=6 + 12),
+        "tonight at 9": TEST_TIME.replace(hour=9 + 12),
+        # "tomorrow at 5pm": TEST_TIME.replace(hour=5 + 12) + timedelta(days=1),
+        # "sunday at 3am": TEST_TIME.replace(hour=3) , 
     }  # yapf: disable
 
     def add_methods(mcs, name, bases, namespace, **kwargs):
@@ -163,7 +172,6 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
 
             def test_normalized_parts(self):
                 got = self.intype.normalize_parts(raw.split(" "))
-                got = got.replace(second=0, microsecond=0)
                 self.assertEqual(expected, got)
 
             return test_normalized_parts
@@ -176,3 +184,10 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
 
     def setUp(self):
         self.intype = inputs.TimeInput()
+
+    def test_normalize_parts_raise_exception(self):
+        msg = "parts: '['invalid', 'time']' must be a valid TimeInput"
+        expected = "^{}$".format(re.escape(msg))
+        with self.assertRaisesRegex(inputs.InputTypeException, expected):
+            self.intype.normalize_parts("invalid time".split(" "))
+
