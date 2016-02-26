@@ -8,6 +8,7 @@ from text_regonizer.commands import *
 from text_regonizer import inputs, actions
 
 from freezegun import freeze_time
+from datetime import timedelta
 
 
 class BaseCommandTestCase:
@@ -85,15 +86,6 @@ class TestCommand(unittest.TestCase):
         self.assertEqual([], self.command._parse_intype(intype, []))
         self.command.handle_input_type.assert_not_called()
 
-    def test_parse_intype_completable_out_of_text(self):
-        intype = self.prep_intype(True, False, completable=False)
-        self.mock_handle_intype(HandlerStatus.PROCESSING)
-        s = ["foo", "bar", "hello", "world"]
-        s_bck = s.copy()
-        self.assertEqual(s_bck, self.command._parse_intype(intype, s))
-        self.assertEqual([], s)
-        self.assertEqual(4, self.command.handle_input_type.call_count)
-
     def __get_statuses(self):
         return (HandlerStatus.NOT_FOUND, HandlerStatus.PROCESSING,
                 HandlerStatus.DONE)
@@ -107,17 +99,6 @@ class TestCommand(unittest.TestCase):
         self.assertIsNone(self.command._parse_intype(intype, s))
         self.assertEqual(s_bck, s)
         self.assertEqual(2, len(self.command.handle_input_type.call_args))
-
-    def test_parse_intype(self):
-        intype = self.prep_intype(True, False)
-        _, p, d = self.__get_statuses()
-        self.mock_handle_intype([p] * 3 + [d])
-
-        s = ["foo", "bar", "hello", "world", "foobar", "barfoo"]
-        s_bck = s.copy()
-
-        self.assertEqual(s_bck[:4], self.command._parse_intype(intype, s))
-        self.assertEqual(s_bck[4:], s)
 
     def test_to_action(self):
         mocked_action = mock.Mock(actions.Action)
@@ -221,6 +202,14 @@ class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
         "remind me to do some cool and awesome stuff at 5pm": {
             "time": TEST_TIME.replace(hour=5 + 12),
             "reminder": ["do", "some", "cool", "and", "awesome", "stuff"]
+        },
+        "remind me to do my homework tomorrow at 5pm": {
+            "time": TEST_TIME.replace(hour=5 + 12) + timedelta(days=1),
+            "reminder": ["do", "my", "homework"],
+        },
+        "tomorrow at 5am remind me to do my homework": {
+            "time": TEST_TIME.replace(hour=5) + timedelta(days=1),
+            "reminder": ["do", "my", "homework"],
         },
     }  # yapf: disable
 

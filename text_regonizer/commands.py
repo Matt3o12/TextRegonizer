@@ -22,20 +22,17 @@ class Command:
         # We need to look ahead and check when the next input starts
         # We do that best by starting to check at the last element
         # and going to the next element till we find a match.
-        reversed_sentence = sentence.copy()
-        reversed_sentence.reverse()
+        ahead_sentence = sentence.copy()
 
         if not intype.completable:
             raise InputTypeException("There was already an " +
                                      "uncompletable input type present.")
-
-        for i in range(1, len(reversed_sentence)):
-            subsentence = reversed_sentence[:i]
-            subsentence.reverse()
-
+        
+        for i, word in enumerate(ahead_sentence):
+            subsentence = ahead_sentence[i:]
             parts = self._parse_intype(intype, subsentence)
             if parts is not None:
-                del sentence[-i:]
+                del sentence[i:]
                 return parts
 
         return False
@@ -74,29 +71,22 @@ class Command:
 
         return results or True
 
-    def __move_parts_back(self, parts, sentence):
-        for i, part in enumerate(parts):
-            sentence.insert(i, part)
-
     def _parse_intype(self, intype, sentence):
-        parts = []
+        parts = sentence.copy()
         status = None
-        while True:
-            if len(sentence) == 0 and not intype.completable:
+
+        if not intype.completable:
+            del sentence[:]
+            return parts
+
+        for i in range(len(sentence)):
+            if self.handle_input_type(parts, intype) == HandlerStatus.DONE:
+                del sentence[:-i]
                 return parts
 
-            if len(sentence) == 0:
-                self.__move_parts_back(parts, sentence)
-                return None
+            parts.pop()
 
-            parts.append(sentence.pop(0))
-            status = self.handle_input_type(parts, intype)
-            if status == HandlerStatus.DONE:
-                return parts
-
-        self.__move_parts_back(parts, sentence)
-        raise RuntimeError("This state should never have been reached. " +
-                           "Please create a bug report")
+        return None
 
     def handle_input_type(self, parts, intype):
         if not intype.is_part_of_input(parts):

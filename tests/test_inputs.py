@@ -159,10 +159,10 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
         "at 2:30pm": TEST_TIME.replace(hour=2 + 12, minute=30),
         "at 1:14am": TEST_TIME.replace(hour=1, minute=14),
         "today": TEST_TIME.replace(hour=2 + 12),
-        # "tomorrow": TEST_TIME.replace(hour=9) + timedelta(days=1), TODO
+        "tomorrow": TEST_TIME.replace(hour=9) + timedelta(days=1), 
         "tonight": TEST_TIME.replace(hour=6 + 12),
         "tonight at 9": TEST_TIME.replace(hour=9 + 12),
-        # "tomorrow at 5pm": TEST_TIME.replace(hour=5 + 12) + timedelta(days=1),
+        "tomorrow at 5pm": TEST_TIME.replace(hour=5 + 12) + timedelta(days=1),
         # "sunday at 3am": TEST_TIME.replace(hour=3) , 
     }  # yapf: disable
 
