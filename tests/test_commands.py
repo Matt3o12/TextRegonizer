@@ -19,7 +19,6 @@ class TestCommand(unittest.TestCase):
 
     def setUp(self):
         self.command = Command()
-        self.move_method = self.command._Command__move_parts_back
 
     def assert_handler(self, status, parts, intype):
         if isinstance(parts, str):
@@ -53,19 +52,6 @@ class TestCommand(unittest.TestCase):
     def test_handle_input_type_processing(self):
         self.assert_handler(HandlerStatus.PROCESSING, "foo bar",
                             self.prep_intype(True, False))
-
-    def test_move_parts_none(self):
-        base = ["foo", "bar"]
-        self.move_method([], base)
-        self.assertEqual(["foo", "bar"], base)
-
-    def test_move_parts_back(self):
-        base = ["hello", "world"]
-        parts = ["foo", "bar"]
-        expceted = parts + base
-        self.move_method(parts, base)
-        self.assertEqual(expceted, base)
-
     def mock_handle_intype(self, return_values=None, **kwargs):
         if return_values and isinstance(return_values, list):
             kwargs["side_effect"] = return_values
