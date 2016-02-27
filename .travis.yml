@@ -13,7 +13,7 @@ install:
       fi
 
 script: 
-    - coverage --source . run -m unittest
+    - coverage run --source . -m unittest
     - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "develop" ];
         then yapf -ri --style=google text_regonizer/ tests/ || exit $?;
       fi
