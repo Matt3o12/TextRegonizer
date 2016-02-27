@@ -52,9 +52,10 @@ class TestCamleCaseToUnderscore(unittest.TestCase):
 
 
 class TestWeekdayToNum(unittest.TestCase):
+
     def assert_weekday(self, weekday, expected):
         self.assertEqual(expected, weekday_to_num(weekday))
-        
+
     def assert_not_weekday(self, weekday):
         self.assertEqual(-1, weekday_to_num(weekday))
 
@@ -84,17 +85,16 @@ class TestWeekdayToNum(unittest.TestCase):
     def test_names_mixed_case(self):
         self.assert_weekday("monday", 0)
         self.assert_weekday("MonDaY", 0)
-        self.assert_weekday("sunDay", 0)
+        self.assert_weekday("sunDay", 6)
 
     def test_not_found(self):
         self.assert_not_weekday("Mo")
         self.assert_not_weekday("foo")
         self.assert_not_weekday("bar")
-        
 
 
 class TestNextWeekday(unittest.TestCase):
-    range_err =  "weekday is not within range 0..6"
+    range_err = "weekday is not within range 0..6"
 
     def setUp(self):
         self.default = parse_time("Thu, Feb 4 2016")
@@ -134,5 +134,3 @@ class TestNextWeekday(unittest.TestCase):
     def test_next_weekday_value_error_negative(self):
         self.assert_invalid_weekday(-1, self.range_err)
         self.assert_invalid_weekday(-10, self.range_err)
-
-
