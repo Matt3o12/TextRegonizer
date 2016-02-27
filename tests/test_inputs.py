@@ -139,18 +139,23 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
     is_input_completed_parts = [
         "today", "tomorrow", "tonight", "at 3pm", "at 7pm", "at 2am",
         "at 2:30am", "at 4:20pm", "at 5:30am", "tonight at 10", "at 5",
-        "at 9",
+        "at 9", "on monday", "on tuesday", "on wednesday", "on thursday", 
+        "on friday", "on saturday", "on sunday", "on tuesday at 3pm",
     ]
     is_input_not_completed_parts = [
         "at", "noon", "foo bar", "barz", "never", "at foo", "at bar",
         "tomorrow foo", "tomorrow at foo", "tomorrow noon", "noon at",
-        "at tomorrow", "tommorow at 5pm bar",
+        "at tomorrow", "tommorow at 5pm bar", "sunday", "monday",
     ]
 
-    is_part_of_input_parts = ["at", "tonight at", "tomorrow at"]
+    is_part_of_input_parts = [
+            "at", "tonight at", "tomorrow at", "on", "on sunday",
+            "on sunday at", "on saturday",
+    ]
     is_not_part_of_input_parts = [
         "hello", "foo bar", "tomorrow foo", "tomorrow at foo",
-        "at foo", "at tomorrow", "tomorrow at 5pm foo",
+        "at foo", "at tomorrow", "tomorrow at 5pm foo", "saturday", 
+        "on saturday at foo", 
     ]
 
     normalized_results = {
@@ -163,7 +168,8 @@ class TestTimeInput(BaseInputTypeTestCase, TestCase):
         "tonight": TEST_TIME.replace(hour=6 + 12),
         "tonight at 9": TEST_TIME.replace(hour=9 + 12),
         "tomorrow at 5pm": TEST_TIME.replace(hour=5 + 12) + timedelta(days=1),
-        # "sunday at 3am": TEST_TIME.replace(hour=3) , 
+        "on sunday at 3am": TEST_TIME.replace(hour=3, day=2), 
+        "on friday night at 6": TEST_TIME.replace(hour=6 + 12, day=7)
     }  # yapf: disable
 
     def add_methods(mcs, name, bases, namespace, **kwargs):

@@ -197,6 +197,14 @@ class TestReminderCommand(CommandFunctionalTests, unittest.TestCase):
             "time": TEST_TIME.replace(hour=5) + timedelta(days=1),
             "reminder": ["do", "my", "homework"],
         },
+        "remind me to do my homework on sunday": {
+            "time": TEST_TIME.replace(hour=2 + 12, day=2),
+            "reminder": ["do", "my", "homework"],
+        },
+        "remind me to do my homework on friday": {
+            "time": TEST_TIME.replace(hour=2 + 12, day=7),
+            "reminder": ["do", "my", "homework"],
+        },
     }  # yapf: disable
 
     invalid_commands = [

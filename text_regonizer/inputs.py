@@ -1,6 +1,8 @@
 import re
 from datetime import datetime, timedelta
 from enum import Enum
+from text_regonizer import common
+import calendar
 
 
 class InputTypeException(Exception):
@@ -71,15 +73,19 @@ class dict_copy_value(dict):
         return super().__getitem__(key).copy()
 
 class TimeInput(InputType):
+    _today = {"hour": 2 + 12}
     beginning_times = dict_copy_value({
-        "today": {"hour": 2 + 12},
+        "today": _today.copy(),
         "tonight": {"hour": 6 + 12,
                     "night": True},
         "tomorrow": {"hour": 9,
                      "delta": timedelta(days=1)},
+        "night": {"hour": 6 + 12, "night": True},
     })
 
     terminal_times = dict_copy_value({"noon": {"hour": 12},})
+
+    weekdays = list(calendar.day_name)
 
     terminal_regex = re.compile(
         r"^(?P<hour>[0-9]{1,2})" +
@@ -113,14 +119,35 @@ class TimeInput(InputType):
         complete and raises InputTypeException if the input is invalid.
         """
 
-        terminal_input = False
-        completable = False
-        time = datetime.now()
+        time = self._replace_time(datetime.now(), self._today)
+
+        # End of input expected (e.g. 19am)
+        terminal_input = False  
+
+        # cannot be completed at this point (i.e. after on, at).
+        completable = False  
+
+        # input is expceted to be on a night (e.g. tonight at 6 is 6pm)
         night = False
+
+        # next, an absolute day (e.g. sunday or Jan 1st) and not something
+        # like tomorrow  and no time.
+        absolute_day = False
         for i, part in enumerate(parts):
             if part == "at":
                 terminal_input = True
                 completable = False
+            elif part == "on":
+                absolute_day = True
+                completable = False
+            elif absolute_day:
+                try:
+                    time = common.next_weekday(time, part)
+                except ValueError:
+                    raise InputTypeException(parts=parts)
+
+                absolute_day = False
+                completable = True
             elif terminal_input:
                 if i + 1 < len(parts):
                     raise InputTypeException(parts=parts)
