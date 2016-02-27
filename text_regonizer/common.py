@@ -25,17 +25,25 @@ def came2underscore(sentence):
     return "".join(new)
 
 def weekday_to_num(weekday):
-    weekdays = zip(calendar.day_name, calendar.day_abbr)
+    l = lambda l: (w.lower() for w in l)
+    weekdays = zip(l(calendar.day_name), l(calendar.day_abbr))
     for n, values in enumerate(weekdays):
-        if weekday in values:
+        if weekday.lower() in values:
             return n
 
     return -1
 
 # Taken from: http://stackoverflow.com/a/6558571/1493365
 def next_weekday(date, weekday):
+    org = weekday
     if isinstance(weekday, str):
         weekday = weekday_to_num(weekday)
+
+    if not 0 <= weekday <= 6:
+        if isinstance(org, str):
+            raise ValueError("Not a weekday: '{}'".format(org))
+        
+        raise ValueError("weekday is not within range 0..6")
 
     days_ahead = weekday - date.weekday()
     if days_ahead < 0: # Target day already happened this week but not that day

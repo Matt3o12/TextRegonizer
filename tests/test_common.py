@@ -67,6 +67,11 @@ class TestWeekdayToNum(unittest.TestCase):
         self.assert_weekday("Sat", 5)
         self.assert_weekday("Sun", 6)
 
+    def test_abbr_mixed_case(self):
+        self.assert_weekday("MoN", 0)
+        self.assert_weekday("wed", 2)
+        self.assert_weekday("SUN", 6)
+
     def test_names(self):
         self.assert_weekday("Monday", 0)
         self.assert_weekday("Tuesday", 1)
@@ -76,6 +81,11 @@ class TestWeekdayToNum(unittest.TestCase):
         self.assert_weekday("Saturday", 5)
         self.assert_weekday("Sunday", 6)
 
+    def test_names_mixed_case(self):
+        self.assert_weekday("monday", 0)
+        self.assert_weekday("MonDaY", 0)
+        self.assert_weekday("sunDay", 0)
+
     def test_not_found(self):
         self.assert_not_weekday("Mo")
         self.assert_not_weekday("foo")
@@ -84,6 +94,8 @@ class TestWeekdayToNum(unittest.TestCase):
 
 
 class TestNextWeekday(unittest.TestCase):
+    range_err =  "weekday is not within range 0..6"
+
     def setUp(self):
         self.default = parse_time("Thu, Feb 4 2016")
 
@@ -103,4 +115,24 @@ class TestNextWeekday(unittest.TestCase):
         self.assertEqual(d(4), self.next_weekday("Mon"))
         self.assertEqual(d(5), self.next_weekday("Tue"))
         self.assertEqual(d(6), self.next_weekday("Wed"))
+
+    def assert_invalid_weekday(self, weekday, msg):
+        with self.assertRaises(ValueError) as exc:
+            self.next_weekday(weekday)
+
+        self.assertEqual(msg, str(exc.exception))
+
+    def test_next_weekday_value_error_str(self):
+        self.assert_invalid_weekday("foo", "Not a weekday: 'foo'")
+
+    def test_next_weekday_value_error_positive(self):
+        self.assert_invalid_weekday(7, self.range_err)
+        self.assert_invalid_weekday(8, self.range_err)
+        self.assert_invalid_weekday(9, self.range_err)
+        self.assert_invalid_weekday(10, self.range_err)
+
+    def test_next_weekday_value_error_negative(self):
+        self.assert_invalid_weekday(-1, self.range_err)
+        self.assert_invalid_weekday(-10, self.range_err)
+
 
