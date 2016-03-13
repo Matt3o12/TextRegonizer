@@ -1,7 +1,8 @@
+import calendar
 import re
 from datetime import datetime, timedelta
+
 from text_regonizer import common
-import calendar
 
 
 class InputTypeException(Exception):

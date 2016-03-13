@@ -1,5 +1,6 @@
-from text_regonizer.common import came2underscore
 import json
+
+from text_regonizer.common import came2underscore
 
 
 class Action:

@@ -1,8 +1,11 @@
 import unittest
-
-from text_regonizer.common import any_result, came2underscore, next_weekday, weekday_to_num
-from dateutil.parser import parse as parse_time
 from datetime import timedelta
+
+from dateutil.parser import parse as parse_time
+from text_regonizer.common import (any_result,
+                                   came2underscore,
+                                   next_weekday,
+                                   weekday_to_num,)
 
 
 class TestAnyResult(unittest.TestCase):

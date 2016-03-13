@@ -1,9 +1,8 @@
 from enum import Enum
-from text_regonizer.inputs import ArbitaryInput
-from text_regonizer.inputs import StringInput
-from text_regonizer.inputs import TimeInput
-from text_regonizer.common import any_result
+
 from text_regonizer import actions
+from text_regonizer.common import any_result
+from text_regonizer.inputs import ArbitaryInput, StringInput, TimeInput
 
 
 class HandlerStatus(Enum):

@@ -1,10 +1,10 @@
 import re
-from text_regonizer import inputs
+from datetime import timedelta
 from unittest import TestCase, mock
 
-from datetime import timedelta
 from freezegun import freeze_time
 from tests import TEST_TIME
+from text_regonizer import inputs
 
 
 class TestInputTypeMeta(type):

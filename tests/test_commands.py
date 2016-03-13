@@ -1,14 +1,12 @@
-import unittest
 import re
-
+import unittest
+from datetime import timedelta
 from unittest import mock
 
-from tests import TEST_TIME
-from text_regonizer.commands import *
-from text_regonizer import inputs, actions
-
 from freezegun import freeze_time
-from datetime import timedelta
+from tests import TEST_TIME
+from text_regonizer import actions, inputs
+from text_regonizer.commands import *
 
 
 class BaseCommandTestCase:

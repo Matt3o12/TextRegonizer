@@ -1,7 +1,7 @@
-import unittest
 import io
+import unittest
 
-from text_regonizer.actions import Action, WeatherAction, ReminderAction
+from text_regonizer.actions import Action, ReminderAction, WeatherAction
 
 
 class TestAction(unittest.TestCase):
