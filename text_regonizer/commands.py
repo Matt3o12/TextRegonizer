@@ -27,7 +27,7 @@ class Command:
         if not intype.completable:
             raise InputTypeException("There was already an " +
                                      "uncompletable input type present.")
-        
+
         for i, word in enumerate(ahead_sentence):
             subsentence = ahead_sentence[i:]
             parts = self._parse_intype(intype, subsentence)

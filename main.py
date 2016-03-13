@@ -10,4 +10,3 @@ if __name__ == "__main__":
     else:
         r = commands.is_command(" ".join(args).lower())
         print(r if r else "Not a valid command")
-

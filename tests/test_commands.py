@@ -52,6 +52,7 @@ class TestCommand(unittest.TestCase):
     def test_handle_input_type_processing(self):
         self.assert_handler(HandlerStatus.PROCESSING, "foo bar",
                             self.prep_intype(True, False))
+
     def mock_handle_intype(self, return_values=None, **kwargs):
         if return_values and isinstance(return_values, list):
             kwargs["side_effect"] = return_values

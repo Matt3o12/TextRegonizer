@@ -6,6 +6,7 @@ import calendar
 
 
 class InputTypeException(Exception):
+
     def __init__(self, message=None, parts=None):
         if parts is not None:
             parts = parts.split(" ") if isinstance(parts, str) else parts
@@ -72,6 +73,7 @@ class dict_copy_value(dict):
     def __getitem__(self, key):
         return super().__getitem__(key).copy()
 
+
 class TimeInput(InputType):
     _today = {"hour": 2 + 12}
     beginning_times = dict_copy_value({
@@ -80,7 +82,8 @@ class TimeInput(InputType):
                     "night": True},
         "tomorrow": {"hour": 9,
                      "delta": timedelta(days=1)},
-        "night": {"hour": 6 + 12, "night": True},
+        "night": {"hour": 6 + 12,
+                  "night": True},
     })
 
     terminal_times = dict_copy_value({"noon": {"hour": 12},})
@@ -122,10 +125,10 @@ class TimeInput(InputType):
         time = self._replace_time(datetime.now(), self._today)
 
         # End of input expected (e.g. 19am)
-        terminal_input = False  
+        terminal_input = False
 
         # cannot be completed at this point (i.e. after on, at).
-        completable = False  
+        completable = False
 
         # input is expceted to be on a night (e.g. tonight at 6 is 6pm)
         night = False
@@ -174,7 +177,7 @@ class TimeInput(InputType):
                 return matches
 
         return None
-    
+
     def normalize_parts(self, parts):
         time = self._parse_input(parts)
         if time is False:
@@ -195,4 +198,3 @@ class TimeInput(InputType):
             return True
         except InputTypeException:
             return False
-
