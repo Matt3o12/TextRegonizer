@@ -1,5 +1,7 @@
 from enum import Enum
-from text_regonizer.inputs import ArbitaryInput, TimeInput, InputType, StringInput
+from text_regonizer.inputs import ArbitaryInput
+from text_regonizer.inputs import StringInput
+from text_regonizer.inputs import TimeInput
 from text_regonizer.common import any_result
 from text_regonizer import actions
 
@@ -73,7 +75,6 @@ class Command:
 
     def _parse_intype(self, intype, sentence):
         parts = sentence.copy()
-        status = None
 
         if not intype.completable:
             del sentence[:]
@@ -129,7 +130,7 @@ class ReminderCommand(Command):
 
 def is_command(sentence):
     commands = [ReminderCommand(), WeatherCommand()]
-    foo = ReminderCommand().matches(sentence)
+    ReminderCommand().matches(sentence)
     key = lambda x: x and x[1]
 
     return any_result(((c, c.matches(sentence)) for c in commands), key)

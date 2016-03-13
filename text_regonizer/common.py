@@ -1,4 +1,3 @@
-import itertools
 import calendar
 
 from datetime import timedelta

@@ -1,6 +1,5 @@
 import re
 from datetime import datetime, timedelta
-from enum import Enum
 from text_regonizer import common
 import calendar
 

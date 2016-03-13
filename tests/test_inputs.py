@@ -2,7 +2,7 @@ import re
 from text_regonizer import inputs
 from unittest import TestCase, mock
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from freezegun import freeze_time
 from tests import TEST_TIME
 
