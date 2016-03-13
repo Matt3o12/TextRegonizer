@@ -1,4 +1,5 @@
 import io
+import datetime
 import unittest
 
 from text_regonizer.actions import Action, ReminderAction, WeatherAction
@@ -51,14 +52,14 @@ class TestReminderAction(BaseActionTestCase, unittest.TestCase):
     expected_name = "reminder_action"
     action_class = ReminderAction
     default_input = {
-        'time': ['at', '5am'],
+        'time': datetime.datetime(2005, 5, 3, 2 + 12, 30, 45),
         'reminder': ['do', 'some', 'and', 'awesome', 'stuff']
     }
 
     def test_dump_action(self):
         expected = ('{"action": "reminder_action", "inputs": '
                     '{"reminder": ["do", "some", "and", "awesome", "stuff"], '
-                    '"time": ["at", "5am"]}}')
+                    '"time": "2005-05-03T14:30:45"}}')
         got = io.StringIO()
         self.action.dump_action(got, sort_keys=True)
         self.assertEqual(expected, got.getvalue())

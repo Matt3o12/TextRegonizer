@@ -3,6 +3,10 @@ import json
 from text_regonizer.common import came2underscore
 
 
+def json_date_handler(obj):
+    return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+
+
 class Action:
 
     def __init__(self, inputs):
@@ -15,6 +19,7 @@ class Action:
         raise NotImplementedError("do_action needs to implemented.")
 
     def dump_action(self, stream, **kwargs):
+        kwargs.setdefault("default", json_date_handler)
         json.dump(
             {
                 "action": self.get_action_name(),
