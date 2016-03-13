@@ -13,10 +13,12 @@ install:
       fi
 
 script: 
-    - coverage run --source . -m unittest
+    - coverage run --source . -m unittest || exit $?
     - if [ "$TRAVIS_BRANCH" == "master" ] || [ "$TRAVIS_BRANCH" == "develop" ];
         then yapf -ri --style=google text_regonizer/ tests/ || exit $?;
       fi
+    - python -m text_regonizer invalid command && exit 1
+    - python -m text_regonizer show me the weather || exit $?
 
 after_success:
     coveralls
